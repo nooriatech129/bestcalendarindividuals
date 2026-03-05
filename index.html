@@ -1,79 +1,341 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendar</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0f;
+      --surface: #161618;
+      --border: #2a2a2e;
+      --accent: #c8f060;
+      --accent-dim: rgba(200, 240, 96, 0.12);
+      --text: #e8e8e2;
+      --muted: #5a5a60;
+      --today-bg: #c8f060;
+      --today-text: #0d0d0f;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    /* Subtle grid texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .calendar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 380px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Header ── */
+    .month-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .month-label {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-transform: capitalize;
+      user-select: none;
+    }
+
+    .month-label span {
+      color: var(--accent);
+    }
+
+    .nav-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .nav-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    /* ── Weekdays ── */
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 0.5rem;
+    }
+
+    .weekdays div {
+      text-align: center;
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.4rem 0;
+    }
+
+    /* ── Days grid ── */
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+
+    .days div {
+      text-align: center;
+      padding: 0.55rem 0;
+      font-size: 0.82rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s ease, color 0.12s ease;
+      color: var(--text);
+      user-select: none;
+      position: relative;
+    }
+
+    .days div:hover:not(.prev-date):not(.next-date):not(.today) {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .days div.prev-date,
+    .days div.next-date {
+      color: var(--muted);
+      cursor: default;
+    }
+
+    .days div.today {
+      background: var(--today-bg);
+      color: var(--today-text);
+      font-weight: 500;
+      border-radius: 8px;
+    }
+
+    .days div.active:not(.today) {
+      background: var(--accent-dim);
+      color: var(--accent);
+      outline: 1px solid var(--accent);
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer .today-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .footer .today-label strong {
+      display: block;
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0;
+      margin-top: 2px;
+    }
+
+    .go-today-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: all 0.15s ease;
+    }
+
+    .go-today-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="left">
-            <div class="calendar">
-                <div class="month">
-                    <i class="fa fa-angle prev"></i>
-                    <div class="date">november 2026</div>
-                    <i class="fa fa-angle next"></i>
-                </div>
 
-                <div class="weekdays">
-                    <div>sun</div>
-                    <div>mon</div>
-                    <div>tue</div>
-                    <div>wen</div>
-                    <div>thu</div>
-                    <div>fri</div>
-                    <div>sat</div>
-                </div>
+<div class="calendar">
+  <div class="month-header">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous month">&#8592;</button>
+    <div class="month-label" id="monthLabel"></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next month">&#8594;</button>
+  </div>
 
-                <div class="days">
-                    <div class="prev-date">30</div>
-                    <div class="prev-date">31</div>
-                    <div>1</div>
-                    <div>2</div>
-                    <div>3</div>
-                    <div>4</div>
-                    <div>5</div>
-                    <div>6</div>
-                    <div>1</div>
-                    <div>2</div>
-                    <div>3</div>
-                    <div>4</div>
-                    <div>5</div>
-                    <div>6</div>
-                    <div>7</div>
-                    <div>8</div>
-                    <div>9</div>
-                    <div>10</div>
-                    <div>11</div>
-                    <div>12</div>
-                    <div>13</div>
-                    <div>14</div>
-                    <div class="today active">15</div>
-                    <div>16</div>
-                    <div>17</div>
-                    <div>18</div>
-                    <div>19</div>
-                    <div>20</div>
-                    <div>21</div>
-                    <div>22</div>
-                    <div>23</div>
-                    <div>24</div>
-                    <div>25</div>
-                    <div>26</div>
-                    <div>27</div>
-                    <div>28</div>
-                    <div>29</div>
-                    <div>30</div>
-                    <div class="next-date">1</div>
-                    <div class="next-date">2</div>
-                    <div class="next-date">3</div>
-                </div>
-            </div>
-        </div>
+  <div class="weekdays">
+    <div>Sun</div><div>Mon</div><div>Tue</div>
+    <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+  </div>
+
+  <div class="days" id="daysGrid"></div>
+
+  <div class="footer">
+    <div class="today-label">
+      Today
+      <strong id="todayFull"></strong>
     </div>
+    <button class="go-today-btn" id="goTodayBtn">Go to today</button>
+  </div>
+</div>
 
-    <script src="script.js"></script>
+<script>
+  const MONTHS = [
+    'January','February','March','April','May','June',
+    'July','August','September','October','November','December'
+  ];
+
+  const realToday = new Date();
+  let current = new Date(realToday.getFullYear(), realToday.getMonth(), 1);
+  let selectedDay = null;
+
+  const monthLabel  = document.getElementById('monthLabel');
+  const daysGrid    = document.getElementById('daysGrid');
+  const todayFull   = document.getElementById('todayFull');
+  const goTodayBtn  = document.getElementById('goTodayBtn');
+  const prevBtn     = document.getElementById('prevBtn');
+  const nextBtn     = document.getElementById('nextBtn');
+
+  // Set footer date once
+  todayFull.textContent = realToday.toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric'
+  });
+
+  function renderCalendar() {
+    const year  = current.getFullYear();
+    const month = current.getMonth();
+
+    // Header
+    monthLabel.innerHTML = `${MONTHS[month]} <span>${year}</span>`;
+
+    const firstDay    = new Date(year, month, 1).getDay();   // 0=Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrev  = new Date(year, month, 0).getDate();
+
+    daysGrid.innerHTML = '';
+
+    // Previous month overflow
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const d = daysInPrev - i;
+      const el = document.createElement('div');
+      el.classList.add('prev-date');
+      el.textContent = d;
+      daysGrid.appendChild(el);
+    }
+
+    // Current month days
+    for (let d = 1; d <= daysInMonth; d++) {
+      const el = document.createElement('div');
+      el.textContent = d;
+
+      const isToday =
+        d === realToday.getDate() &&
+        month === realToday.getMonth() &&
+        year === realToday.getFullYear();
+
+      if (isToday) el.classList.add('today');
+
+      if (
+        selectedDay &&
+        d === selectedDay.d &&
+        month === selectedDay.m &&
+        year === selectedDay.y
+      ) {
+        el.classList.add('active');
+      }
+
+      el.addEventListener('click', () => {
+        selectedDay = { d, m: month, y: year };
+        renderCalendar();
+      });
+
+      daysGrid.appendChild(el);
+    }
+
+    // Next month overflow — fill to complete last row
+    const total = firstDay + daysInMonth;
+    const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+    for (let d = 1; d <= remaining; d++) {
+      const el = document.createElement('div');
+      el.classList.add('next-date');
+      el.textContent = d;
+      daysGrid.appendChild(el);
+    }
+  }
+
+  prevBtn.addEventListener('click', () => {
+    current.setMonth(current.getMonth() - 1);
+    renderCalendar();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    current.setMonth(current.getMonth() + 1);
+    renderCalendar();
+  });
+
+  goTodayBtn.addEventListener('click', () => {
+    current = new Date(realToday.getFullYear(), realToday.getMonth(), 1);
+    selectedDay = null;
+    renderCalendar();
+  });
+
+  renderCalendar();
+</script>
 </body>
 </html>
