@@ -1,8 +1,8 @@
 const calendar = document.querySelector(".calendar");
-date =document.querySelector(".date");
-daysContainer = document.querySelector(".days");
-prev = document.querySelector(".prev");
-next = document.querySelector(".next");
+const date = document.querySelector(".date");
+const daysContainer = document.querySelector(".days");
+const prev = document.querySelector(".prev");
+const next = document.querySelector(".next");
 
 let today = new Date();
 let activeDay;
@@ -28,10 +28,10 @@ function initCalendar() {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const prevLastDay = new Date(year, month, 0);
-        const prevDayIndex = prevLastDay.getDay();
-        const firstDayIndex = firstDay.getDay();
-        const lastDayIndex = lastDay.getDay();
-            const nextDays = 7 - lastDayIndex - 1;
+    const prevDayIndex = prevLastDay.getDay();
+    const firstDayIndex = firstDay.getDay();
+    const lastDayIndex = lastDay.getDay();
+    const nextDays = 7 - lastDayIndex - 1;
     date.innerHTML = months[month] + " " + year;
     let days = "";
 
@@ -50,4 +50,7 @@ function initCalendar() {
         } else {
             days += `<div class="day">${i}</div>`;
         }
+    }
 
+    daysContainer.innerHTML = days;
+}
