@@ -66,7 +66,8 @@ body {
     background-color: rgb(153,153,153);
 }
 
-.calendar.month {
+/* Fix 1: .calendar.month -> .calendar .month (missing descendant space) */
+.calendar .month {
     width: 100%;
     height: 15px;
     display: flex;
@@ -78,8 +79,9 @@ body {
     text-transform: capitalize;
 }
 
-.calendar.month .prev:hover,
-.calendar.month .next:hover {
+/* Fix 2: same selector fix for hover states */
+.calendar .month .prev:hover,
+.calendar .month .next:hover {
     cursor: pointer;
     color: var(--primary-clr);
 }
@@ -136,7 +138,12 @@ body {
     color: #b3b3b3;
 }
 
-.calendar .days .active::before {
-    content: "";
-    /* add any additional styling here */
+/* Fix 3: empty ::before removed; today/active now have actual visible styles */
+.calendar .days .today {
+    color: #fff;
+    background-color: var(--primary-clr);
+}
+
+.calendar .days .active {
+    border: 2px solid var(--primary-clr);
 }
